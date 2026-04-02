@@ -9,7 +9,7 @@ Projects carried out at **DFKI Kaiserslautern** during Semester 4 (WiSe 2025–2
 
 | # | Project | Department | Supervisor(s) |
 |---|---------|------------|---------------|
-| 1 | [∆-InstructCIR: Direct Visual Difference Captioning for Composed Image Retrieval](#project-1--instructcir) | Augmented Vision (AV) | Sankalp Sinha |
+| 1 | [∆-InstructCIR: Direct Visual Difference Captioning for Composed Image Retrieval](#project-1-instructcir) | Augmented Vision (AV) | Sankalp Sinha |
 | 2 | [Knowledge-Based Extractor for Operationalizing Trustworthy AI Requirements](#project-2-knowledge-based-extractor-for-trustworthy-ai) | Data Science & its Applications (DSA) | Priyabanta Sandulu, Islam Mesabah |
 
 ---
@@ -32,6 +32,22 @@ This project proposes **∆-InstructCIR**, a data augmentation framework based o
 - **Dataset analysis**: Demonstrated that **content-oriented** image-editing datasets (AnyEdit, EditGarment) are significantly better suited for CIR than style-oriented ones (MagicBrush, RealEdit)
 - **Zero-shot generalization**: Spotty generalizes to unseen CIR benchmarks (FashionIQ, CIRR) despite being trained solely on image-editing data
 
+### Model Architecture
+
+The figure below shows the Spotty architecture. Given a reference image $I_a$ and a target image $I_b$, the model generates a textual instruction $t_{ab}$ describing the visual transformation between them — for example, *"Change the sheep color to black."*
+
+![Spotty architecture for direct visual difference captioning](assets/spotty-architecture.png)
+
+*Fig. 1 — Spotty: bi-image VLM built on InternVL-2.5. The vision encoder (InternViT) processes both images; the language model (InternLM), adapted via LoRA, generates the edit instruction autoregressively.*
+
+### Qualitative Results
+
+The following examples show Spotty's predictions on the content-oriented AnyEdit dataset. Green text indicates correct predictions, orange indicates partially correct, and red indicates incorrect.
+
+![Qualitative results on EditGarment test split](assets/composed-image-retrieval/EditGarment_Collage.png)
+
+*Fig. 2 — Qualitative results on EditGarment. Spotty produces semantically accurate and fine-grained edit instructions for content-level transformations.*
+
 ### Results Summary
 
 | Dataset | Type | BERTScore-F1 | ROUGE-L | BLEU-1 | CIDEr |
@@ -43,15 +59,15 @@ This project proposes **∆-InstructCIR**, a data augmentation framework based o
 | FashionIQ (overall) | Zero-Shot CIR | 84.85 ± 0.22 | 7.25 | 5.81 | 0.07 |
 | CIRR | Zero-Shot CIR | 86.73 ± 0.23 | 13.76 | 16.15 | 0.15 |
 
-An additional **LLM-as-a-judge evaluation** using GPT-4o-mini showed that Spotty's predictions were preferred over ground-truth instructions on FashionIQ (59% vs 39%), reflecting the alignment with garment-focused content-oriented editing data.
+An additional **LLM-as-a-judge evaluation** using GPT-4o-mini showed that Spotty's predictions were preferred over ground-truth instructions on FashionIQ (59% vs 39%), reflecting strong alignment with garment-focused content-oriented editing data.
 
 ### Tech Stack
 
 `Python` · `PyTorch` · `InternVL-2.5` · `LoRA (PEFT)` · `HuggingFace` · `FlashAttention-2` · `DFKI GPU Cluster (A100 / RTX 3090 / RTX A6000)`
 
 ### 📄 Files
-- [`P16_FarisAbuAli_Report_Final.pdf`](./P16_FarisAbuAli_Report_Final.pdf) — Full project report
-- [`P16_FarisAbuAli_Presentation_Final.pptx`](./P16_FarisAbuAli_Presentation_Final.pptx) — Presentation slides
+- [`composed-image-retrieval/P16_FarisAbuAli_Report_Final.pdf`](./composed-image-retrieval/P16_FarisAbuAli_Report_Final.pdf) — Full project report
+- [`composed-image-retrieval/P16_FarisAbuAli_Presentation_Final.pptx`](./composed-image-retrieval/P16_FarisAbuAli_Presentation_Final.pptx) — Presentation slides
 
 ---
 
@@ -67,6 +83,12 @@ AI governance frameworks like the **EU AI Act** impose obligations on developers
 Inspired by the conceptual framework in *"Actionable Trustworthy AI with a Knowledge-based Debugger"* (Sandulu et al., ECAI 2025), this project implements a **working end-to-end prototype pipeline** that extracts knowledge from regulatory documents and integrates it into an expandable Neo4j knowledge graph — with a human-in-the-loop validation step at every critical stage.
 
 ### Pipeline Architecture (7 Stages)
+
+The pipeline takes a document corpus and a user-selected topic keyword, then extracts, filters, classifies, and integrates knowledge into a graph through seven sequential stages:
+
+![High-level pipeline architecture](assets/knowledge-based-extractor/pipeline-architecture.png)
+
+*Fig. 3 — The 7-stage knowledge extraction pipeline. The feedback loop allows newly integrated knowledge to enrich the graph for future pipeline runs.*
 
 ```
 📄 Document Corpus
@@ -96,6 +118,32 @@ Inspired by the conceptual framework in *"Actionable Trustworthy AI with a Knowl
 - **Human-in-the-loop** oversight interface for validating extracted sentences and reviewing triplets before graph insertion
 - **Live demo** deployed on Hugging Face Spaces with a Flask-based web UI
 
+### Querying the Knowledge Graph using a Keyword
+
+At the start of each pipeline run, the system queries Neo4j to retrieve all one-hop relations associated with the user-selected keyword. This subgraph serves as the contextual reference for all downstream filtering and novelty assessment stages — grounding the extraction process in what the system already knows.
+
+
+The figure below shows the retrieved subgraph for the keyword **"Explainability"**, one of the seven ethical requirements for trustworthy AI defined by the European Commission. Each node represents a concept, and each directed edge represents a named relation extracted from prior pipeline runs.
+ 
+![Retrieved knowledge graph context for the keyword Explainability](assets/knowledge-based-extractor/knowledge-graph.png)
+
+
+### Human Oversight Interface
+
+After the pipeline processes the document, extracted candidate sentences are grouped by novelty label and presented to a human reviewer in the Oversight tab. The reviewer selects which sentences should proceed to triplet extraction.
+
+![Human oversight interface after novelty classification](assets/knowledge-based-extractor/oversight-ui.png)
+
+*Fig. 4 — Oversight view: extracted sentences grouped into Existing Knowledge, Partial Match, and New Knowledge tabs. The final integration decision remains with the human reviewer.*
+
+### Knowledge Graph Visualization
+
+Once accepted sentences are converted into (Subject, Predicate, Object) triplets and submitted, they are inserted into the Neo4j knowledge graph along with full provenance metadata — including the originating sentence, source document, and timestamps.
+
+![Updated knowledge graph after triplet insertion](assets/knowledge-based-extractor/knowledge-graph-relation-details.png)
+
+*Fig. 5 — The Neo4j knowledge graph after inserting new triplets for the keyword "Explainability", with relationship metadata visible in the details panel.*
+
 ### Tech Stack
 
 `Python` · `Flask` · `Neo4j AuraDB` · `LangChain` · `Docling` · `KeyBERT` · `FAISS` · `SentenceTransformers` · `Groq API (Llama-3.1-8b-instant)` · `Hugging Face Spaces`
@@ -105,8 +153,8 @@ Inspired by the conceptual framework in *"Actionable Trustworthy AI with a Knowl
 👉 [huggingface.co/spaces/faris-abuali/kbdebugger-demo](https://huggingface.co/spaces/faris-abuali/kbdebugger-demo)
 
 ### 📄 Files
-- [`Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf`](./Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf) — Full project report
-- [`Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx`](./Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx) — Presentation slides
+- [`knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf`](./knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf) — Full project report
+- [`knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx`](./knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx) — Presentation slides
 
 ---
 
