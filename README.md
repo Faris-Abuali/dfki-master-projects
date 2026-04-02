@@ -36,7 +36,7 @@ This project proposes **∆-InstructCIR**, a data augmentation framework based o
 
 The figure below shows the Spotty architecture. Given a reference image $I_a$ and a target image $I_b$, the model generates a textual instruction $t_{ab}$ describing the visual transformation between them — for example, *"Change the sheep color to black."*
 
-![Spotty architecture for direct visual difference captioning](assets/spotty-architecture.png)
+![Spotty architecture for direct visual difference captioning](assets/composed-image-retrieval/Spotty_architecture.png)
 
 *Fig. 1 — Spotty: bi-image VLM built on InternVL-2.5. The vision encoder (InternViT) processes both images; the language model (InternLM), adapted via LoRA, generates the edit instruction autoregressively.*
 
@@ -153,8 +153,8 @@ Once accepted sentences are converted into (Subject, Predicate, Object) triplets
 👉 [huggingface.co/spaces/faris-abuali/kbdebugger-demo](https://huggingface.co/spaces/faris-abuali/kbdebugger-demo)
 
 ### 📄 Files
-- [`knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf`](./knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf) — Full project report
-- [`knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx`](./knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx) — Presentation slides
+- [`knowledge-based-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf`](./knowledge-based-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pdf) — Full project report
+- [`knowledge-base-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx`](./knowledge-based-extractor/Implementation_of_a_Knowledge_Based_Extractor_for_Trustworthy_AI.pptx) — Presentation slides
 
 ---
 
